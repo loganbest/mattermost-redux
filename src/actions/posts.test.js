@@ -965,6 +965,78 @@ describe('Actions.Posts', () => {
         assert.ok(postsForThread.includes(post3a.id));
     });
 
+    it('getPostsAround', async () => {
+        const postId = 'post3';
+        const channelId = 'channel1';
+
+        const postsAfter = {
+            posts: {
+                post1: {id: 'post1', create_at: 10002, message: ''},
+                post2: {id: 'post2', create_at: 10001, message: ''},
+            },
+            order: ['post1', 'post2'],
+        };
+        const postsThread = {
+            posts: {
+                root: {id: 'root', create_at: 10010, message: ''},
+                post3: {id: 'post3', root_id: 'root', create_at: 10000, message: ''},
+            },
+            order: ['post3'],
+        };
+        const postsBefore = {
+            posts: {
+                post4: {id: 'post4', create_at: 9999, message: ''},
+                post5: {id: 'post5', create_at: 9998, message: ''},
+            },
+            order: ['post4', 'post5'],
+        };
+
+        nock(Client4.getChannelsRoute()).
+            get(`/${channelId}/posts`).
+            query((params) => Boolean(params.after)).
+            reply(200, postsAfter);
+        nock(Client4.getChannelsRoute()).
+            get(`/${channelId}/posts`).
+            query((params) => Boolean(params.before)).
+            reply(200, postsBefore);
+        nock(Client4.getPostsRoute()).
+            get(`/${postId}/thread`).
+            query(true).
+            reply(200, postsThread);
+
+        const result = await store.dispatch(Actions.getPostsAround(channelId, postId));
+
+        expect(result.error).toBeFalsy();
+        expect(result.data).toEqual({
+            posts: {
+                ...postsAfter.posts,
+                ...postsThread.posts,
+                ...postsBefore.posts,
+            },
+            order: [
+                ...postsAfter.order,
+                postId,
+                ...postsBefore.order,
+            ],
+        });
+
+        const {posts, postsInChannel, postsInThread} = store.getState().entities.posts;
+
+        // should store all of the posts
+        expect(posts).toHaveProperty('post1');
+        expect(posts).toHaveProperty('post2');
+        expect(posts).toHaveProperty('post3');
+        expect(posts).toHaveProperty('post4');
+        expect(posts).toHaveProperty('post5');
+        expect(posts).toHaveProperty('root');
+
+        // should only store the posts that we know the order of
+        expect(postsInChannel[channelId]).toEqual(['post1', 'post2', 'post3', 'post4', 'post5']);
+
+        // should populate postsInThread
+        expect(postsInThread.root).toEqual(['post3']);
+    });
+
     it('flagPost', async () => {
         const {dispatch, getState} = store;
         const channelId = TestHelper.basicChannel.id;

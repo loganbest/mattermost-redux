@@ -663,9 +663,52 @@ export function getPostsAfter(channelId, postId, page = 0, perPage = Posts.POST_
             getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);
         } catch (error) {
             forceLogoutIfNecessary(error, dispatch, getState);
-            dispatch(getState);
+            dispatch(logError(error));
             return {error};
         }
+
+        dispatch(batchActions([
+            receivedPosts(posts),
+            receivedPostsInChannel(posts, channelId),
+        ]));
+
+        return {data: posts};
+    };
+}
+
+export function getPostsAround(channelId, postId, perPage = Posts.POST_CHUNK_SIZE / 2) {
+    return async (dispatch, getState) => {
+        let after;
+        let thread;
+        let before;
+
+        try {
+            [after, thread, before] = await Promise.all([
+                Client4.getPostsAfter(channelId, postId, 0, perPage),
+                Client4.getPostThread(postId),
+                Client4.getPostsBefore(channelId, postId, 0, perPage),
+            ]);
+        } catch (error) {
+            forceLogoutIfNecessary(error, dispatch, getState);
+            dispatch(logError(error));
+            return {error};
+        }
+
+        // Dispatch a combined post list so that the order is correct for postsInChannel
+        const posts = {
+            posts: {
+                ...after.posts,
+                ...thread.posts,
+                ...before.posts,
+            },
+            order: [ // Remember that the order is newest posts first
+                ...after.order,
+                postId,
+                ...before.order,
+            ],
+        };
+
+        getProfilesAndStatusesForPosts(posts.posts, dispatch, getState);
 
         dispatch(batchActions([
             receivedPosts(posts),
