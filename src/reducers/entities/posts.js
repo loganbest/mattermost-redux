@@ -347,9 +347,9 @@ export function postsInChannel(state = {}, action, prevPosts, nextPosts) {
 
     case PostTypes.RECEIVED_POSTS_IN_CHANNEL:
     case PostTypes.RECEIVED_POSTS_SINCE: {
-        const posts = Object.values(action.data.posts);
+        const order = action.data.order;
 
-        if (posts.length === 0 && state[action.channelId]) {
+        if (order.length === 0 && state[action.channelId]) {
             // No new posts received when we already have posts
             return state;
         }
@@ -357,14 +357,14 @@ export function postsInChannel(state = {}, action, prevPosts, nextPosts) {
         const postsForChannel = state[action.channelId] || [];
         const nextPostsForChannel = [...postsForChannel];
 
-        for (const post of posts) {
-            if (nextPostsForChannel.includes(post.id)) {
+        for (const postId of order) {
+            if (nextPostsForChannel.includes(postId)) {
                 // We already have the post
                 continue;
             }
 
             // Just add the post id to the end of the order and we'll sort it out later
-            nextPostsForChannel.push(post.id);
+            nextPostsForChannel.push(postId);
         }
 
         nextPostsForChannel.sort((a, b) => {

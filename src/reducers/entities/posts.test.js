@@ -744,7 +744,7 @@ describe('postsInChannel', () => {
                             post1: nextPosts.post1,
                             post3: nextPosts.post3,
                         },
-                        order: [],
+                        order: ['post1', 'post3'],
                     },
                 }, null, nextPosts);
 
@@ -774,7 +774,7 @@ describe('postsInChannel', () => {
                             post2: nextPosts.post2,
                             post4: nextPosts.post4,
                         },
-                        order: [],
+                        order: ['post2', 'post4'],
                     },
                 }, null, nextPosts);
 
@@ -819,6 +819,36 @@ describe('postsInChannel', () => {
                 expect(nextState).not.toBe(state);
                 expect(nextState).toEqual({
                     channel1: [],
+                });
+            });
+
+            it('should not save posts that are not in order', () => {
+                const state = deepFreeze({
+                    channel1: ['post1', 'post3'],
+                });
+
+                const nextPosts = {
+                    post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                    post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                    post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                    post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+                };
+
+                const nextState = reducers.postsInChannel(state, {
+                    type: actionType,
+                    channelId: 'channel1',
+                    data: {
+                        posts: {
+                            post2: nextPosts.post2,
+                            post4: nextPosts.post4,
+                        },
+                        order: ['post4'],
+                    },
+                }, null, nextPosts);
+
+                expect(nextState).not.toBe(state);
+                expect(nextState).toEqual({
+                    channel1: ['post1', 'post3', 'post4'],
                 });
             });
         });
