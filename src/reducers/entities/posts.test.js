@@ -561,7 +561,12 @@ describe('postsInChannel', () => {
 
         it('should store the new post when the channel is empty', () => {
             const state = deepFreeze({
-                channel1: [],
+                channel1: [
+                    {
+                        order: [],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -571,13 +576,23 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1'],
+                channel1: [
+                    {
+                        order: ['post1'],
+                        recent: true,
+                    },
+                ],
             });
         });
 
-        it('should store the new post when the channel has posts', () => {
+        it('should store the new post when the channel has recent posts', () => {
             const state = deepFreeze({
-                channel1: ['post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -587,13 +602,47 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should not store the new post when the channel only has older posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                    },
+                ],
+            });
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_NEW_POST,
+                data: {id: 'post1', channel_id: 'channel1'},
+            });
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                    },
+                ],
             });
         });
 
         it('should do nothing for a duplicate post', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -606,7 +655,12 @@ describe('postsInChannel', () => {
 
         it('should remove a previously pending post', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'pending', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'pending', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -616,13 +670,23 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post3', 'post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post3', 'post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
         });
 
         it('should just add the new post if the pending post was already removed', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -632,7 +696,12 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post3', 'post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post3', 'post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
         });
     });
@@ -640,7 +709,12 @@ describe('postsInChannel', () => {
     describe('receiving a single post', () => {
         it('should replace a previously pending post', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'pending', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'pending', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -650,13 +724,23 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post3', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'post3', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
         });
 
         it('should do nothing for a pending post that was already removed', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -666,13 +750,23 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
         });
 
         it('should do nothing for a post that was not previously pending', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'pending', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'pending', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -682,13 +776,23 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'pending', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'pending', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
         });
 
         it('should do nothing for a post without posts loaded for the channel', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
 
             const nextState = reducers.postsInChannel(state, {
@@ -698,166 +802,946 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2'],
-            });
-        });
-
-        it('should do nothing for a pending post that is not loaded', () => {
-            const state = deepFreeze({
-                channel1: ['post1', 'post2'],
-            });
-
-            const nextState = reducers.postsInChannel(state, {
-                type: PostTypes.RECEIVED_POST,
-                data: {id: 'post3', channel_id: 'channel1', pending_post_id: 'pending'},
-            });
-
-            expect(nextState).toBe(state);
-            expect(nextState).toEqual({
-                channel1: ['post1', 'post2'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
             });
         });
     });
 
-    for (const actionType of [
-        PostTypes.RECEIVED_POSTS_IN_CHANNEL,
-        PostTypes.RECEIVED_POSTS_SINCE,
-    ]) {
-        describe(`receiving posts in the channel (${actionType})`, () => {
-            it('should save posts in the channel in the correct order', () => {
-                const state = deepFreeze({
-                    channel1: ['post2', 'post4'],
-                });
-
-                const nextPosts = {
-                    post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
-                    post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
-                    post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
-                    post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
-                };
-
-                const nextState = reducers.postsInChannel(state, {
-                    type: actionType,
-                    channelId: 'channel1',
-                    data: {
-                        posts: {
-                            post1: nextPosts.post1,
-                            post3: nextPosts.post3,
-                        },
-                        order: ['post1', 'post3'],
-                    },
-                }, null, nextPosts);
-
-                expect(nextState).not.toBe(state);
-                expect(nextState).toEqual({
-                    channel1: ['post1', 'post2', 'post3', 'post4'],
-                });
-            });
-
-            it('should not save duplicate posts', () => {
-                const state = deepFreeze({
-                    channel1: ['post1', 'post2', 'post3'],
-                });
-
-                const nextPosts = {
-                    post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
-                    post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
-                    post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
-                    post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
-                };
-
-                const nextState = reducers.postsInChannel(state, {
-                    type: actionType,
-                    channelId: 'channel1',
-                    data: {
-                        posts: {
-                            post2: nextPosts.post2,
-                            post4: nextPosts.post4,
-                        },
+    describe('receiving a page of posts in the channel', () => {
+        it('should save posts in the channel in the correct order', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
                         order: ['post2', 'post4'],
+                        recent: true,
                     },
-                }, null, nextPosts);
-
-                expect(nextState).not.toBe(state);
-                expect(nextState).toEqual({
-                    channel1: ['post1', 'post2', 'post3', 'post4'],
-                });
+                ],
             });
 
-            it('should do nothing when receiving no posts for loaded channel', () => {
-                const state = deepFreeze({
-                    channel1: ['post1', 'post2', 'post3'],
-                });
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
 
-                const nextState = reducers.postsInChannel(state, {
-                    type: actionType,
-                    channelId: 'channel1',
-                    data: {
-                        posts: {},
-                        order: [],
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post3: nextPosts.post3,
                     },
-                }, null, {});
+                    order: ['post1', 'post3'],
+                },
+                page: 0,
+            }, null, nextPosts);
 
-                expect(nextState).toBe(state);
-                expect(nextState).toEqual({
-                    channel1: ['post1', 'post2', 'post3'],
-                });
-            });
-
-            it('should make entry for channel with no posts', () => {
-                const state = deepFreeze({});
-
-                const nextState = reducers.postsInChannel(state, {
-                    type: actionType,
-                    channelId: 'channel1',
-                    data: {
-                        posts: {},
-                        order: [],
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
                     },
-                }, null, {});
-
-                expect(nextState).not.toBe(state);
-                expect(nextState).toEqual({
-                    channel1: [],
-                });
-            });
-
-            it('should not save posts that are not in order', () => {
-                const state = deepFreeze({
-                    channel1: ['post1', 'post3'],
-                });
-
-                const nextPosts = {
-                    post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
-                    post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
-                    post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
-                    post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
-                };
-
-                const nextState = reducers.postsInChannel(state, {
-                    type: actionType,
-                    channelId: 'channel1',
-                    data: {
-                        posts: {
-                            post2: nextPosts.post2,
-                            post4: nextPosts.post4,
-                        },
-                        order: ['post4'],
-                    },
-                }, null, nextPosts);
-
-                expect(nextState).not.toBe(state);
-                expect(nextState).toEqual({
-                    channel1: ['post1', 'post3', 'post4'],
-                });
+                ],
             });
         });
-    }
+
+        it('should not save duplicate posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post2: nextPosts.post2,
+                        post4: nextPosts.post4,
+                    },
+                    order: ['post2', 'post4'],
+                },
+                page: 0,
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should do nothing when receiving no posts for loaded channel', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {},
+                    order: [],
+                },
+                page: 0,
+            }, null, {});
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should make entry for channel with no posts', () => {
+            const state = deepFreeze({});
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {},
+                    order: [],
+                },
+                page: 0,
+            }, null, {});
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [],
+            });
+        });
+
+        it('should not save posts that are not in data.order', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                        post3: nextPosts.post3,
+                        post4: nextPosts.post4,
+                    },
+                    order: ['post1', 'post2'],
+                },
+                page: 0,
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should not save posts in an older block, even if they may be adjacent', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+                page: 0,
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should not save posts in the recent block even if new posts may be adjacent', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+                page: 0,
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should do nothing when the page is not 0', () => {
+            const state = deepFreeze({
+                channel1: ['post2', 'post4'],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post3: nextPosts.post3,
+                    },
+                    order: ['post1', 'post3'],
+                },
+                page: 1,
+            }, null, nextPosts);
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({
+                channel1: ['post2', 'post4'],
+            });
+        });
+    });
+
+    describe('receiving posts since', () => {
+        it('should save posts in the channel in the correct order', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should not save older posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post4: nextPosts.post4,
+                    },
+                    order: ['post1', 'post4'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should do nothing if only receiving updated posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post4: nextPosts.post4,
+                    },
+                    order: ['post1', 'post4'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should not save duplicate posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should do nothing when receiving no posts for loaded channel', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {},
+                    order: [],
+                },
+            }, null, {});
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should do nothing for channel with no posts', () => {
+            const state = deepFreeze({});
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {},
+                    order: [],
+                },
+                page: 0,
+            }, null, {});
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({});
+        });
+
+        it('should not save posts that are not in data.order', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post4: nextPosts.post4,
+                    },
+                    order: ['post1'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+
+        it('should not save posts in an older block', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+        });
+
+        it('should always save posts in the recent block', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_SINCE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+    });
+
+    describe('receiving posts after', () => {
+        it('should save posts when channel is not loaded', () => {
+            const state = deepFreeze({});
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_AFTER,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+                afterPostId: 'post3',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
+            });
+        });
+
+        it('should save posts when channel is empty', () => {
+            const state = deepFreeze({
+                channel1: [],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_AFTER,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+                afterPostId: 'post3',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
+            });
+        });
+
+        it('should add posts to existing block', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_AFTER,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post2: nextPosts.post2,
+                    },
+                    order: ['post1', 'post2'],
+                },
+                afterPostId: 'post3',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
+            });
+        });
+
+        it('should merge adjacent posts if we have newer posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post4'],
+                    },
+                    {
+                        order: ['post1', 'post2'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_AFTER,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post3: nextPosts.post3,
+                    },
+                    order: ['post2', 'post3'],
+                },
+                afterPostId: 'post4',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+    });
+
+    describe('receiving posts before', () => {
+        it('should save posts when channel is not loaded', () => {
+            const state = deepFreeze({});
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_BEFORE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post2: nextPosts.post2,
+                        post3: nextPosts.post3,
+                    },
+                    order: ['post2', 'post3'],
+                },
+                beforePostId: 'post1',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
+            });
+        });
+
+        it('should save posts when channel is empty', () => {
+            const state = deepFreeze({
+                channel1: [],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_BEFORE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post2: nextPosts.post2,
+                        post3: nextPosts.post3,
+                    },
+                    order: ['post2', 'post3'],
+                },
+                beforePostId: 'post1',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
+            });
+        });
+
+        it('should add posts to existing block', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_BEFORE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post3: nextPosts.post3,
+                        post4: nextPosts.post4,
+                    },
+                    order: ['post3', 'post4'],
+                },
+                beforePostId: 'post2',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
+            });
+        });
+
+        it('should merge adjacent posts if we have newer posts', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post4'],
+                    },
+                    {
+                        order: ['post1'],
+                        recent: true,
+                    },
+                ],
+            });
+
+            const nextPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', create_at: 4000},
+                post2: {id: 'post2', channel_id: 'channel1', create_at: 3000},
+                post3: {id: 'post3', channel_id: 'channel1', create_at: 2000},
+                post4: {id: 'post4', channel_id: 'channel1', create_at: 1000},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.RECEIVED_POSTS_BEFORE,
+                channelId: 'channel1',
+                data: {
+                    posts: {
+                        post1: nextPosts.post1,
+                        post3: nextPosts.post3,
+                    },
+                    order: ['post2', 'post3', 'post4'],
+                },
+                beforePostId: 'post1',
+            }, null, nextPosts);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                        recent: true,
+                    },
+                ],
+            });
+        });
+    });
 
     describe('deleting a post', () => {
         it('should do nothing when deleting a post without comments', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -873,13 +1757,21 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
         });
 
         it('should remove comments on the post when deleting a post with comments', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -896,13 +1788,96 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post3', 'post4'],
+                    },
+                ],
+            });
+        });
+
+        it('should remove comments from multiple blocks', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                    },
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const prevPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', root_id: 'post4'},
+                post2: {id: 'post2', channel_id: 'channel1'},
+                post3: {id: 'post3', channel_id: 'channel1', root_id: 'post4'},
+                post4: {id: 'post4', channel_id: 'channel1'},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.POST_DELETED,
+                data: prevPosts.post4,
+            }, prevPosts, null);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post2'],
+                    },
+                    {
+                        order: ['post4'],
+                    },
+                ],
+            });
+        });
+
+        it('should do nothing to blocks without comments', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                    },
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const prevPosts = {
+                post1: {id: 'post1', channel_id: 'channel1'},
+                post2: {id: 'post2', channel_id: 'channel1'},
+                post3: {id: 'post3', channel_id: 'channel1', root_id: 'post4'},
+                post4: {id: 'post4', channel_id: 'channel1'},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.POST_DELETED,
+                data: prevPosts.post4,
+            }, prevPosts, null);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState[0]).toBe(state[0]);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                    },
+                    {
+                        order: ['post4'],
+                    },
+                ],
             });
         });
 
         it('should do nothing when deleting a comment', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -919,13 +1894,21 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
             });
         });
 
         it('should do nothing if the post has not been loaded', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -942,7 +1925,11 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
         });
 
@@ -962,13 +1949,51 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({});
+        });
+
+        it('should remove empty blocks', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                    },
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const prevPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', root_id: 'post4'},
+                post2: {id: 'post2', channel_id: 'channel1', root_id: 'post4'},
+                post3: {id: 'post3', channel_id: 'channel1', root_id: 'post4'},
+                post4: {id: 'post4', channel_id: 'channel1'},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.POST_DELETED,
+                data: prevPosts.post4,
+            }, prevPosts, null);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post4'],
+                    },
+                ],
+            });
         });
     });
 
     describe('removing a post', () => {
         it('should remove the post', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -984,13 +2009,21 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post3'],
+                    },
+                ],
             });
         });
 
         it('should remove comments on the post', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -1007,13 +2040,21 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post4'],
+                    },
+                ],
             });
         });
 
         it('should remove a comment without removing the root post', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3', 'post4'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -1030,13 +2071,21 @@ describe('postsInChannel', () => {
 
             expect(nextState).not.toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post3', 'post4'],
+                channel1: [
+                    {
+                        order: ['post1', 'post3', 'post4'],
+                    },
+                ],
             });
         });
 
         it('should do nothing if the post has not been loaded', () => {
             const state = deepFreeze({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
 
             const prevPosts = {
@@ -1053,7 +2102,11 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({
-                channel1: ['post1', 'post2', 'post3'],
+                channel1: [
+                    {
+                        order: ['post1', 'post2', 'post3'],
+                    },
+                ],
             });
         });
 
@@ -1073,6 +2126,40 @@ describe('postsInChannel', () => {
 
             expect(nextState).toBe(state);
             expect(nextState).toEqual({});
+        });
+
+        it('should remove empty blocks', () => {
+            const state = deepFreeze({
+                channel1: [
+                    {
+                        order: ['post1', 'post2'],
+                    },
+                    {
+                        order: ['post3', 'post4'],
+                    },
+                ],
+            });
+
+            const prevPosts = {
+                post1: {id: 'post1', channel_id: 'channel1', root_id: 'post4'},
+                post2: {id: 'post2', channel_id: 'channel1'},
+                post3: {id: 'post3', channel_id: 'channel1', root_id: 'post4'},
+                post4: {id: 'post4', channel_id: 'channel1'},
+            };
+
+            const nextState = reducers.postsInChannel(state, {
+                type: PostTypes.POST_REMOVED,
+                data: prevPosts.post4,
+            }, prevPosts, null);
+
+            expect(nextState).not.toBe(state);
+            expect(nextState).toEqual({
+                channel1: [
+                    {
+                        order: ['post2'],
+                    },
+                ],
+            });
         });
     });
 
@@ -1083,8 +2170,13 @@ describe('postsInChannel', () => {
         describe(`when a channel is deleted (${actionType})`, () => {
             it('should remove any posts in that channel', () => {
                 const state = deepFreeze({
-                    channel1: ['post1', 'post2', 'post3'],
-                    channel2: ['post4', 'post5'],
+                    channel1: [
+                        {order: ['post1', 'post2', 'post3']},
+                        {order: ['post6', 'post7', 'post8']},
+                    ],
+                    channel2: [
+                        {order: ['post4', 'post5']},
+                    ],
                 });
 
                 const nextState = reducers.postsInChannel(state, {
@@ -1098,14 +2190,20 @@ describe('postsInChannel', () => {
                 expect(nextState).not.toBe(state);
                 expect(nextState.channel2).toBe(state.channel2);
                 expect(nextState).toEqual({
-                    channel2: ['post4', 'post5'],
+                    channel2: [
+                        {order: ['post4', 'post5']},
+                    ],
                 });
             });
 
             it('should do nothing if no posts in that channel are loaded', () => {
                 const state = deepFreeze({
-                    channel1: ['post1', 'post2', 'post3'],
-                    channel2: ['post4', 'post5'],
+                    channel1: [
+                        {order: ['post1', 'post2', 'post3']},
+                    ],
+                    channel2: [
+                        {order: ['post4', 'post5']},
+                    ],
                 });
 
                 const nextState = reducers.postsInChannel(state, {
@@ -1120,15 +2218,24 @@ describe('postsInChannel', () => {
                 expect(nextState.channel1).toBe(state.channel1);
                 expect(nextState.channel2).toBe(state.channel2);
                 expect(nextState).toEqual({
-                    channel1: ['post1', 'post2', 'post3'],
-                    channel2: ['post4', 'post5'],
+                    channel1: [
+                        {order: ['post1', 'post2', 'post3']},
+                    ],
+                    channel2: [
+                        {order: ['post4', 'post5']},
+                    ],
                 });
             });
 
             it('should not remove any posts with viewArchivedChannels enabled', () => {
                 const state = deepFreeze({
-                    channel1: ['post1', 'post2', 'post3'],
-                    channel2: ['post4', 'post5'],
+                    channel1: [
+                        {order: ['post1', 'post2', 'post3']},
+                        {order: ['post6', 'post7', 'post8']},
+                    ],
+                    channel2: [
+                        {order: ['post4', 'post5']},
+                    ],
                 });
 
                 const nextState = reducers.postsInChannel(state, {
@@ -1143,10 +2250,260 @@ describe('postsInChannel', () => {
                 expect(nextState.channel1).toBe(state.channel1);
                 expect(nextState.channel2).toBe(state.channel2);
                 expect(nextState).toEqual({
-                    channel1: ['post1', 'post2', 'post3'],
-                    channel2: ['post4', 'post5'],
+                    channel1: [
+                        {order: ['post1', 'post2', 'post3']},
+                        {order: ['post6', 'post7', 'post8']},
+                    ],
+                    channel2: [
+                        {order: ['post4', 'post5']},
+                    ],
                 });
             });
+        });
+    }
+});
+
+describe('mergePostBlocks', () => {
+    it('should do nothing with no blocks', () => {
+        const blocks = [];
+        const posts = {};
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).toBe(blocks);
+    });
+
+    it('should do nothing with only one block', () => {
+        const blocks = [
+            {order: ['a']},
+        ];
+        const posts = {
+            a: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).toBe(blocks);
+    });
+
+    it('should do nothing with two separate blocks', () => {
+        const blocks = [
+            {order: ['a']},
+            {order: ['b']},
+        ];
+        const posts = {
+            a: {create_at: 1000},
+            b: {create_at: 1001},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).toBe(blocks);
+    });
+
+    it('should merge two blocks containing exactly the same posts', () => {
+        const blocks = [
+            {order: ['a']},
+            {order: ['a']},
+        ];
+        const posts = {
+            a: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).not.toBe(blocks);
+        expect(nextBlocks).toEqual([
+            {order: ['a']},
+        ]);
+    });
+
+    it('should merge two blocks containing overlapping posts', () => {
+        const blocks = [
+            {order: ['a', 'b', 'c']},
+            {order: ['b', 'c', 'd']},
+        ];
+        const posts = {
+            a: {create_at: 1003},
+            b: {create_at: 1002},
+            c: {create_at: 1001},
+            d: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).not.toBe(blocks);
+        expect(nextBlocks).toEqual([
+            {order: ['a', 'b', 'c', 'd']},
+        ]);
+    });
+
+    it('should merge more than two blocks containing overlapping posts', () => {
+        const blocks = [
+            {order: ['d', 'e']},
+            {order: ['a', 'b']},
+            {order: ['c', 'd']},
+            {order: ['b', 'c']},
+        ];
+        const posts = {
+            a: {create_at: 1004},
+            b: {create_at: 1003},
+            c: {create_at: 1002},
+            d: {create_at: 1001},
+            e: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).not.toBe(blocks);
+        expect(nextBlocks).toEqual([
+            {order: ['a', 'b', 'c', 'd', 'e']},
+        ]);
+    });
+
+    it('should not affect blocks that are not merged', () => {
+        const blocks = [
+            {order: ['a', 'b']},
+            {order: ['b', 'c']},
+            {order: ['d', 'e']},
+        ];
+        const posts = {
+            a: {create_at: 1004},
+            b: {create_at: 1003},
+            c: {create_at: 1002},
+            d: {create_at: 1001},
+            e: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).not.toBe(blocks);
+        expect(nextBlocks[1]).toBe(blocks[2]);
+        expect(nextBlocks).toEqual([
+            {order: ['a', 'b', 'c']},
+            {order: ['d', 'e']},
+        ]);
+    });
+
+    it('should keep merged blocks marked as recent', () => {
+        const blocks = [
+            {order: ['a', 'b'], recent: true},
+            {order: ['b', 'c']},
+        ];
+        const posts = {
+            a: {create_at: 1002},
+            b: {create_at: 1001},
+            c: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).not.toBe(blocks);
+        expect(nextBlocks).toEqual([
+            {order: ['a', 'b', 'c'], recent: true},
+        ]);
+    });
+
+    it('should remove empty blocks', () => {
+        const blocks = [
+            {order: ['a', 'b'], recent: true},
+            {order: []},
+        ];
+        const posts = {
+            a: {create_at: 1002},
+            b: {create_at: 1001},
+            c: {create_at: 1000},
+        };
+
+        const nextBlocks = reducers.mergePostBlocks(blocks, posts);
+
+        expect(nextBlocks).not.toBe(blocks);
+        expect(nextBlocks[0]).toBe(blocks[0]);
+        expect(nextBlocks).toEqual([
+            {order: ['a', 'b'], recent: true},
+        ]);
+    });
+});
+
+describe('mergePostOrder', () => {
+    const tests = [
+        {
+            name: 'empty arrays',
+            left: [],
+            right: [],
+            expected: [],
+        },
+        {
+            name: 'empty left array',
+            left: [],
+            right: ['c', 'd'],
+            expected: ['c', 'd'],
+        },
+        {
+            name: 'empty right array',
+            left: ['a', 'b'],
+            right: [],
+            expected: ['a', 'b'],
+        },
+        {
+            name: 'distinct arrays',
+            left: ['a', 'b'],
+            right: ['c', 'd'],
+            expected: ['a', 'b', 'c', 'd'],
+        },
+        {
+            name: 'overlapping arrays',
+            left: ['a', 'b', 'c', 'd'],
+            right: ['c', 'd', 'e', 'f'],
+            expected: ['a', 'b', 'c', 'd', 'e', 'f'],
+        },
+        {
+            name: 'left array is start of right array',
+            left: ['a', 'b'],
+            right: ['a', 'b', 'c', 'd'],
+            expected: ['a', 'b', 'c', 'd'],
+        },
+        {
+            name: 'right array is end of left array',
+            left: ['a', 'b', 'c', 'd'],
+            right: ['c', 'd'],
+            expected: ['a', 'b', 'c', 'd'],
+        },
+        {
+            name: 'left array contains right array',
+            left: ['a', 'b', 'c', 'd'],
+            right: ['b', 'c'],
+            expected: ['a', 'b', 'c', 'd'],
+        },
+        {
+            name: 'items in second array missing from first',
+            left: ['a', 'c'],
+            right: ['b', 'd', 'e', 'f'],
+            expected: ['a', 'b', 'c', 'd', 'e', 'f'],
+        },
+    ];
+
+    const posts = {
+        a: {create_at: 10000},
+        b: {create_at: 9000},
+        c: {create_at: 8000},
+        d: {create_at: 7000},
+        e: {create_at: 6000},
+        f: {create_at: 5000},
+    };
+
+    for (const test of tests) {
+        it(test.name, () => {
+            const left = [...test.left];
+            const right = [...test.right];
+
+            const actual = reducers.mergePostOrder(left, right, posts);
+
+            expect(actual).toEqual(test.expected);
+
+            // Arguments shouldn't be mutated
+            expect(left).toEqual(test.left);
+            expect(right).toEqual(test.right);
         });
     }
 });
