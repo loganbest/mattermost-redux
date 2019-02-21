@@ -79,9 +79,14 @@ export type PostWithFormatData = {|
     highlight: boolean,
 |};
 
+export type PostOrderBlock = {|
+    order: Array<string>,
+    recent: boolean,
+|};
+
 export type PostsState = {|
     posts: IDMappedObjects<Post>,
-    postsInChannel: RelationOneToMany<Channel, Post>,
+    postsInChannel: RelationOneToMany<Channel, Array<Post, PostOrderBlock>>,
     postsInThread: RelationOneToMany<Post, Post>,
     reactions: RelationOneToOne<Post, {[string]: Reaction}>,
     openGraph: RelationOneToOne<Post, Object>,

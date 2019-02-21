@@ -370,13 +370,8 @@ export function postsInChannel(state = {}, action, prevPosts, nextPosts) {
     }
 
     case PostTypes.RECEIVED_POSTS_IN_CHANNEL: {
-        const page = action.page;
+        const recent = action.recent;
         const order = action.data.order;
-
-        if (page !== 0) {
-            // We can only ensure the order is correct when receiving the most recent posts in the channel (ie the first page)
-            return state;
-        }
 
         if (order.length === 0 && state[action.channelId]) {
             // No new posts received when we already have posts
@@ -386,30 +381,33 @@ export function postsInChannel(state = {}, action, prevPosts, nextPosts) {
         const postsForChannel = state[action.channelId] || [];
         let nextPostsForChannel = [...postsForChannel];
 
-        // If there is already a recent block, unmark it from being recent. If the newly received posts are part of the
-        // same block, those will be re-added when we're merging overlapping blocks.
-        const recentBlockIndex = postsForChannel.findIndex((block) => block.recent);
-        if (recentBlockIndex !== -1) {
-            const recentBlock = postsForChannel[recentBlockIndex];
+        if (recent) {
+            // The newly received block is now the most recent, so unmark the current most recent block
+            const recentBlockIndex = postsForChannel.findIndex((block) => block.recent);
+            if (recentBlockIndex !== -1) {
+                const recentBlock = postsForChannel[recentBlockIndex];
 
-            if (recentBlock.order.length === order.length &&
-                recentBlock.order[0] === order[0] &&
-                recentBlock.order[recentBlock.order.length - 1] === order[order.length - 1]) {
-                // The newly received posts are identical to the most recent block, so there's nothing to do
-                return state;
+                if (recentBlock.order.length === order.length &&
+                    recentBlock.order[0] === order[0] &&
+                    recentBlock.order[recentBlock.order.length - 1] === order[order.length - 1]) {
+                    // The newly received posts are identical to the most recent block, so there's nothing to do
+                    return state;
+                }
+
+                // Unmark the most recent block since the new posts are more recent
+                const nextRecentBlock = {
+                    ...recentBlock,
+                    recent: false,
+                };
+
+                nextPostsForChannel[recentBlockIndex] = nextRecentBlock;
             }
-
-            // Unmark the most recent block since the new posts are more recent
-            const nextRecentBlock = {...recentBlock};
-            Reflect.deleteProperty(nextRecentBlock, 'recent');
-
-            nextPostsForChannel[recentBlockIndex] = nextRecentBlock;
         }
 
         // Add the new most recent block
         nextPostsForChannel.push({
             order,
-            recent: true,
+            recent,
         });
 
         // Merge overlapping blocks
@@ -430,6 +428,7 @@ export function postsInChannel(state = {}, action, prevPosts, nextPosts) {
         // Add a new block including the previous post and then have mergePostBlocks sort out any overlap or duplicates
         const newBlock = {
             order: [...order, afterPostId],
+            recent: false,
         };
 
         let nextPostsForChannel = [...postsForChannel, newBlock];
@@ -450,6 +449,7 @@ export function postsInChannel(state = {}, action, prevPosts, nextPosts) {
         // Add a new block including the next post and then have mergePostBlocks sort out any overlap or duplicates
         const newBlock = {
             order: [beforePostId, ...order],
+            recent: false,
         };
 
         let nextPostsForChannel = [...postsForChannel, newBlock];
@@ -664,9 +664,7 @@ export function mergePostBlocks(blocks, posts) {
                 order: mergePostOrder(a.order, b.order, posts),
             };
 
-            if (a.recent || b.recent) {
-                nextBlocks[i].recent = true;
-            }
+            nextBlocks[i].recent = a.recent || b.recent;
 
             nextBlocks.splice(i + 1, 1);
 
