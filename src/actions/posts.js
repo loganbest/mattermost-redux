@@ -51,20 +51,38 @@ export function receivedPosts(posts) {
     };
 }
 
-export function receivedPostsSince(posts, channelId, since) {
+export function receivedPostsAfter(posts, channelId, afterPostId) {
+    return {
+        type: PostTypes.RECEIVED_POSTS_AFTER,
+        channelId,
+        data: posts,
+        afterPostId,
+    };
+}
+
+export function receivedPostsBefore(posts, channelId, beforePostId) {
+    return {
+        type: PostTypes.RECEIVED_POSTS_BEFORE,
+        channelId,
+        data: posts,
+        beforePostId,
+    };
+}
+
+export function receivedPostsSince(posts, channelId) {
     return {
         type: PostTypes.RECEIVED_POSTS_SINCE,
         channelId,
         data: posts,
-        since,
     };
 }
 
-export function receivedPostsInChannel(posts, channelId) {
+export function receivedPostsInChannel(posts, channelId, recent = false) {
     return {
         type: PostTypes.RECEIVED_POSTS_IN_CHANNEL,
         channelId,
         data: posts,
+        recent,
     };
 }
 
@@ -574,7 +592,7 @@ export function getPosts(channelId, page = 0, perPage = Posts.POST_CHUNK_SIZE) {
 
         dispatch(batchActions([
             receivedPosts(posts),
-            receivedPostsInChannel(posts, channelId),
+            receivedPostsInChannel(posts, channelId, page === 0),
         ]));
 
         return {data: posts};
@@ -624,7 +642,7 @@ export function getPostsSince(channelId, since) {
 
         dispatch(batchActions([
             receivedPosts(posts),
-            receivedPostsSince(posts, channelId, since),
+            receivedPostsSince(posts, channelId),
             {
                 type: PostTypes.GET_POSTS_SINCE_SUCCESS,
             },
@@ -648,7 +666,7 @@ export function getPostsBefore(channelId, postId, page = 0, perPage = Posts.POST
 
         dispatch(batchActions([
             receivedPosts(posts),
-            receivedPostsInChannel(posts, channelId),
+            receivedPostsBefore(posts, channelId, postId),
         ]));
 
         return {data: posts};
@@ -669,7 +687,7 @@ export function getPostsAfter(channelId, postId, page = 0, perPage = Posts.POST_
 
         dispatch(batchActions([
             receivedPosts(posts),
-            receivedPostsInChannel(posts, channelId),
+            receivedPostsAfter(posts, channelId, postId),
         ]));
 
         return {data: posts};
@@ -1039,14 +1057,11 @@ export function handleNewPost(msg) {
 }
 
 function completePostReceive(post, websocketMessageProps) {
-    return async (dispatch, getState) => {
+    return (dispatch, getState) => {
         const state = getState();
         const rootPost = Selectors.getPost(state, post.root_id);
-        const postsInChannel = Selectors.getPostIdsInChannel(state, post.channel_id);
 
-        // skip calling getPostThread if there are no postsInChannel.
-        // This leads to having few posts in channel before the first visit.
-        if (post.root_id && !rootPost && postsInChannel && postsInChannel.length !== 0) {
+        if (post.root_id && !rootPost) {
             dispatch(getPostThread(post.root_id));
         }
 

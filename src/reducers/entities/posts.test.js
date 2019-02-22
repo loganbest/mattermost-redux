@@ -2667,6 +2667,8 @@ describe('postsInThread', () => {
     });
 
     for (const actionType of [
+        PostTypes.RECEIVED_POSTS_AFTER,
+        PostTypes.RECEIVED_POSTS_BEFORE,
         PostTypes.RECEIVED_POSTS_IN_CHANNEL,
         PostTypes.RECEIVED_POSTS_SINCE,
     ]) {

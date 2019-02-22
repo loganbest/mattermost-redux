@@ -769,6 +769,8 @@ export function postsInThread(state = {}, action, prevPosts) {
         };
     }
 
+    case PostTypes.RECEIVED_POSTS_AFTER:
+    case PostTypes.RECEIVED_POSTS_BEFORE:
     case PostTypes.RECEIVED_POSTS_IN_CHANNEL:
     case PostTypes.RECEIVED_POSTS_SINCE: {
         const newPosts = Object.values(action.data.posts);
